@@ -14,6 +14,8 @@ export interface Team {
   id: string
   name: string
   completed: Board
+  /** Verification photo per square as a data-URL thumbnail, or null. */
+  photos: (string | null)[]
 }
 
 export interface AppState {

@@ -1,10 +1,15 @@
+import { useRef } from 'react'
 import { ACTIVITIES } from '../data/activities'
+import { fileToThumbnail } from '../logic/photo'
 import { LINES, completedLines } from '../logic/scoring'
 import type { Board } from '../types'
 
 interface Props {
   board: Board
+  photos: (string | null)[]
   onToggle: (index: number) => void
+  onPhoto: (index: number, dataUrl: string) => void
+  onPhotoRemove: (index: number) => void
 }
 
 /**
@@ -22,38 +27,83 @@ const STROKES: { x1: number; y1: number; x2: number; y2: number }[] = [
   { x1: 278, y1: 22, x2: 22, y2: 278 },
 ]
 
-export function BingoBoard({ board, onToggle }: Props) {
+export function BingoBoard({ board, photos, onToggle, onPhoto, onPhotoRemove }: Props) {
   const lines = completedLines(board)
   const litSquares = new Set(lines.flatMap((i) => LINES[i]))
+  const fileInput = useRef<HTMLInputElement>(null)
+  const pendingSquare = useRef<number>(-1)
+
+  const pickPhoto = (index: number) => {
+    pendingSquare.current = index
+    fileInput.current?.click()
+  }
+
+  const handleFile = async (file: File | undefined) => {
+    const index = pendingSquare.current
+    pendingSquare.current = -1
+    if (!file || index < 0) return
+    try {
+      onPhoto(index, await fileToThumbnail(file))
+    } catch {
+      window.alert('Could not read that image — please try a JPEG or PNG file.')
+    }
+  }
 
   return (
     <div className="board-wrap">
       <div className="board-grid">
         {ACTIVITIES.map((activity, i) => (
-          <button
-            key={activity.name}
-            type="button"
-            className={[
-              'square',
-              activity.kind,
-              board[i] ? 'done' : '',
-              litSquares.has(i) ? 'in-line' : '',
-            ].join(' ')}
-            onClick={() => onToggle(i)}
-            aria-pressed={board[i]}
-          >
-            <span className="square-kind">{activity.kind === 'light' ? 'Light' : 'Deep'}</span>
-            <span className="square-icon" aria-hidden>
-              {activity.icon}
-            </span>
-            <span className="square-name">{activity.name}</span>
-            <span className="square-subtitle">{activity.subtitle}</span>
-            {board[i] && (
-              <span className="square-check" aria-hidden>
-                ✓
+          <div key={activity.name} className="cell">
+            <button
+              type="button"
+              className={[
+                'square',
+                activity.kind,
+                board[i] ? 'done' : '',
+                litSquares.has(i) ? 'in-line' : '',
+                photos[i] ? 'has-photo' : '',
+              ].join(' ')}
+              onClick={() => onToggle(i)}
+              aria-pressed={board[i]}
+            >
+              {photos[i] && <img className="square-photo" src={photos[i]} alt="" />}
+              <span className="square-kind">{activity.kind === 'light' ? 'Light' : 'Deep'}</span>
+              <span className="square-icon" aria-hidden>
+                {activity.icon}
               </span>
+              <span className="square-name">{activity.name}</span>
+              <span className="square-subtitle">{activity.subtitle}</span>
+              {board[i] && (
+                <span className="square-check" aria-hidden>
+                  ✓
+                </span>
+              )}
+            </button>
+            {board[i] && (
+              <div className="photo-controls">
+                <button
+                  type="button"
+                  className="photo-btn"
+                  title={photos[i] ? 'Replace verification photo' : 'Add verification photo'}
+                  aria-label={`${photos[i] ? 'Replace' : 'Add'} verification photo for ${activity.name}`}
+                  onClick={() => pickPhoto(i)}
+                >
+                  📷
+                </button>
+                {photos[i] && (
+                  <button
+                    type="button"
+                    className="photo-btn photo-remove"
+                    title="Remove photo"
+                    aria-label={`Remove photo for ${activity.name}`}
+                    onClick={() => onPhotoRemove(i)}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
             )}
-          </button>
+          </div>
         ))}
       </div>
       <svg className="board-strokes" viewBox="0 0 300 300" aria-hidden>
@@ -71,6 +121,18 @@ export function BingoBoard({ board, onToggle }: Props) {
           )
         })}
       </svg>
+      <input
+        ref={fileInput}
+        type="file"
+        accept="image/*"
+        className="photo-input"
+        aria-hidden
+        tabIndex={-1}
+        onChange={(e) => {
+          void handleFile(e.target.files?.[0])
+          e.target.value = ''
+        }}
+      />
     </div>
   )
 }

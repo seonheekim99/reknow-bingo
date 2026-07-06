@@ -7,6 +7,7 @@ export function makeTeam(name: string): Team {
     id: crypto.randomUUID(),
     name,
     completed: Array(9).fill(false),
+    photos: Array(9).fill(null),
   }
 }
 
@@ -27,6 +28,15 @@ function isValidTeam(t: unknown): t is Team {
   )
 }
 
+/** Fill in fields added after the first release (photos) for older saves. */
+function normalizeTeam(team: Team): Team {
+  const photos =
+    Array.isArray(team.photos) && team.photos.length === 9
+      ? team.photos.map((p) => (typeof p === 'string' ? p : null))
+      : Array<string | null>(9).fill(null)
+  return { ...team, photos }
+}
+
 export function loadState(): AppState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
@@ -37,7 +47,7 @@ export function loadState(): AppState {
     const activeTeamId = parsed.teams.some((t) => t.id === parsed.activeTeamId)
       ? parsed.activeTeamId
       : parsed.teams[0].id
-    return { teams: parsed.teams, activeTeamId }
+    return { teams: parsed.teams.map(normalizeTeam), activeTeamId }
   } catch {
     return defaultState()
   }

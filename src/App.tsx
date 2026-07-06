@@ -29,6 +29,17 @@ export default function App() {
     if (after > before) setCelebration((c) => c + 1)
   }
 
+  const setPhoto = (index: number, dataUrl: string | null) => {
+    setState((s) => ({
+      ...s,
+      teams: s.teams.map((t) =>
+        t.id === activeTeam.id
+          ? { ...t, photos: t.photos.map((p, i) => (i === index ? dataUrl : p)) }
+          : t,
+      ),
+    }))
+  }
+
   const addTeam = () => {
     const names = new Set(state.teams.map((t) => t.name))
     let n = state.teams.length + 1
@@ -75,7 +86,13 @@ export default function App() {
               })
             }
           />
-          <BingoBoard board={activeTeam.completed} onToggle={toggleSquare} />
+          <BingoBoard
+            board={activeTeam.completed}
+            photos={activeTeam.photos}
+            onToggle={toggleSquare}
+            onPhoto={(index, dataUrl) => setPhoto(index, dataUrl)}
+            onPhotoRemove={(index) => setPhoto(index, null)}
+          />
           <p className="board-status">
             <strong>{activeTeam.name}</strong>: {activeLines} line{activeLines === 1 ? '' : 's'} ·{' '}
             {activeTeam.completed.filter(Boolean).length} / 9 squares

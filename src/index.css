@@ -178,6 +178,11 @@ body {
   gap: 10px;
 }
 
+.cell {
+  position: relative;
+  aspect-ratio: 1;
+}
+
 .square {
   position: relative;
   display: flex;
@@ -185,7 +190,9 @@ body {
   align-items: center;
   justify-content: center;
   gap: 3px;
-  aspect-ratio: 1;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
   border-radius: 16px;
   border: 2px solid #e2e6ec;
   background: #fff;
@@ -262,6 +269,80 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* ---------- verification photos ---------- */
+
+.square-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.square.has-photo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(15, 28, 46, 0.15) 0%, rgba(15, 28, 46, 0.75) 100%);
+}
+
+.square.has-photo .square-icon,
+.square.has-photo .square-subtitle {
+  display: none;
+}
+
+.square.has-photo .square-kind,
+.square.has-photo .square-name,
+.square.has-photo .square-check {
+  z-index: 1;
+}
+
+.square.has-photo .square-name {
+  color: #fff;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+  margin-top: auto;
+}
+
+.photo-controls {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  display: flex;
+  gap: 5px;
+  z-index: 2;
+}
+
+.photo-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 0;
+  background: rgba(19, 34, 56, 0.85);
+  color: #fff;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.photo-btn:hover {
+  background: var(--navy-deep);
+}
+
+.photo-remove:hover {
+  background: #b23a3a;
+}
+
+.photo-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .board-strokes {
