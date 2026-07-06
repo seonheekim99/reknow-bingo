@@ -12,6 +12,8 @@ most completed bingo lines wins. This app tracks multiple teams' boards, counts 
 - Ties are broken by total squares completed; still-tied teams share a rank (shown as `T-n`).
 - **Light** activities sit on the diamond (edge) squares, **Deep** activities on the
   X (corner + center) squares, matching the program deck.
+- Completed squares accept a **verification photo** (📷 button) — images are downscaled
+  to small JPEG thumbnails and stored with the board.
 
 ## Run
 
