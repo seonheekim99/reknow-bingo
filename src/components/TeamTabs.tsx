@@ -1,16 +1,18 @@
 import { useState } from 'react'
+import type { Strings } from '../i18n'
 import type { Team } from '../types'
 
 interface Props {
   teams: Team[]
   activeTeamId: string
+  strings: Strings
   onSelect: (id: string) => void
   onAdd: () => void
   onRename: (id: string, name: string) => void
   onRemove: (id: string) => void
 }
 
-export function TeamTabs({ teams, activeTeamId, onSelect, onAdd, onRename, onRemove }: Props) {
+export function TeamTabs({ teams, activeTeamId, strings, onSelect, onAdd, onRename, onRemove }: Props) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [draft, setDraft] = useState('')
 
@@ -50,7 +52,7 @@ export function TeamTabs({ teams, activeTeamId, onSelect, onAdd, onRename, onRem
                   setEditingId(team.id)
                   setDraft(team.name)
                 }}
-                title="Double-click to rename"
+                title={strings.renameHint}
               >
                 {team.name}
               </button>
@@ -59,9 +61,9 @@ export function TeamTabs({ teams, activeTeamId, onSelect, onAdd, onRename, onRem
               <button
                 type="button"
                 className="team-remove"
-                aria-label={`Remove ${team.name}`}
+                aria-label={strings.removeTeam(team.name)}
                 onClick={() => {
-                  if (window.confirm(`Remove ${team.name}? Its board will be lost.`)) {
+                  if (window.confirm(strings.removeConfirm(team.name))) {
                     onRemove(team.id)
                   }
                 }}
@@ -73,7 +75,7 @@ export function TeamTabs({ teams, activeTeamId, onSelect, onAdd, onRename, onRem
         )
       })}
       <button type="button" className="team-add" onClick={onAdd}>
-        + Add team
+        {strings.addTeam}
       </button>
     </div>
   )

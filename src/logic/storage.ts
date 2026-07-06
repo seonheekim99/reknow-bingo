@@ -1,3 +1,4 @@
+import type { Lang } from '../i18n'
 import type { AppState, Team } from '../types'
 
 const STORAGE_KEY = 'reknow-bingo:v1'
@@ -8,12 +9,13 @@ export function makeTeam(name: string): Team {
     name,
     completed: Array(9).fill(false),
     photos: Array(9).fill(null),
+    memos: Array(9).fill(null),
   }
 }
 
 function defaultState(): AppState {
   const team = makeTeam('Team 1')
-  return { teams: [team], activeTeamId: team.id }
+  return { teams: [team], activeTeamId: team.id, lang: 'en' }
 }
 
 function isValidTeam(t: unknown): t is Team {
@@ -28,13 +30,16 @@ function isValidTeam(t: unknown): t is Team {
   )
 }
 
-/** Fill in fields added after the first release (photos) for older saves. */
+/** A 9-slot array of nullable strings, coerced from possibly-older saves. */
+function normalizeSlots(value: unknown): (string | null)[] {
+  return Array.isArray(value) && value.length === 9
+    ? value.map((v) => (typeof v === 'string' ? v : null))
+    : Array<string | null>(9).fill(null)
+}
+
+/** Fill in fields added after the first release (photos, memos) for older saves. */
 function normalizeTeam(team: Team): Team {
-  const photos =
-    Array.isArray(team.photos) && team.photos.length === 9
-      ? team.photos.map((p) => (typeof p === 'string' ? p : null))
-      : Array<string | null>(9).fill(null)
-  return { ...team, photos }
+  return { ...team, photos: normalizeSlots(team.photos), memos: normalizeSlots(team.memos) }
 }
 
 export function loadState(): AppState {
@@ -47,7 +52,8 @@ export function loadState(): AppState {
     const activeTeamId = parsed.teams.some((t) => t.id === parsed.activeTeamId)
       ? parsed.activeTeamId
       : parsed.teams[0].id
-    return { teams: parsed.teams.map(normalizeTeam), activeTeamId }
+    const lang: Lang = parsed.lang === 'ko' ? 'ko' : 'en'
+    return { teams: parsed.teams.map(normalizeTeam), activeTeamId, lang }
   } catch {
     return defaultState()
   }

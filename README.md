@@ -14,6 +14,9 @@ most completed bingo lines wins. This app tracks multiple teams' boards, counts 
   X (corner + center) squares, matching the program deck.
 - Completed squares accept a **verification photo** (📷 button) — images are downscaled
   to small JPEG thumbnails and stored with the board.
+- Completed squares also take a short **memo** (📝 button) recording what the team did
+  and when; hover a square to see it.
+- The header **EN / 한국어 toggle** switches all UI text (activity names stay RE:*).
 
 ## Run
 
@@ -29,7 +32,8 @@ All data is stored in the browser's localStorage (`reknow-bingo:v1`); no server 
 
 ## Structure
 
-- `src/data/activities.ts` — the fixed 9-activity board layout
+- `src/data/activities.ts` — the fixed 9-activity board layout (EN/KO subtitles)
+- `src/i18n.ts` — UI strings for the EN/KO language toggle
 - `src/logic/scoring.ts` — pure line-counting and ranking logic
 - `src/logic/storage.ts` — localStorage persistence with validation fallback
 - `src/components/` — board, team tabs, leaderboard, win celebration

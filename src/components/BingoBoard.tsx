@@ -1,5 +1,6 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { ACTIVITIES } from '../data/activities'
+import type { Lang, Strings } from '../i18n'
 import { fileToThumbnail } from '../logic/photo'
 import { LINES, completedLines } from '../logic/scoring'
 import type { Board } from '../types'
@@ -7,9 +8,13 @@ import type { Board } from '../types'
 interface Props {
   board: Board
   photos: (string | null)[]
+  memos: (string | null)[]
+  lang: Lang
+  strings: Strings
   onToggle: (index: number) => void
   onPhoto: (index: number, dataUrl: string) => void
   onPhotoRemove: (index: number) => void
+  onMemo: (index: number, memo: string | null) => void
 }
 
 /**
@@ -27,11 +32,23 @@ const STROKES: { x1: number; y1: number; x2: number; y2: number }[] = [
   { x1: 278, y1: 22, x2: 22, y2: 278 },
 ]
 
-export function BingoBoard({ board, photos, onToggle, onPhoto, onPhotoRemove }: Props) {
+export function BingoBoard({
+  board,
+  photos,
+  memos,
+  lang,
+  strings,
+  onToggle,
+  onPhoto,
+  onPhotoRemove,
+  onMemo,
+}: Props) {
   const lines = completedLines(board)
   const litSquares = new Set(lines.flatMap((i) => LINES[i]))
   const fileInput = useRef<HTMLInputElement>(null)
   const pendingSquare = useRef<number>(-1)
+  const [memoIndex, setMemoIndex] = useState<number | null>(null)
+  const [memoDraft, setMemoDraft] = useState('')
 
   const pickPhoto = (index: number) => {
     pendingSquare.current = index
@@ -47,6 +64,18 @@ export function BingoBoard({ board, photos, onToggle, onPhoto, onPhotoRemove }: 
     } catch {
       window.alert('Could not read that image — please try a JPEG or PNG file.')
     }
+  }
+
+  const openMemo = (index: number) => {
+    setMemoDraft(memos[index] ?? '')
+    setMemoIndex(index)
+  }
+
+  const saveMemo = () => {
+    if (memoIndex === null) return
+    const text = memoDraft.trim()
+    onMemo(memoIndex, text === '' ? null : text)
+    setMemoIndex(null)
   }
 
   return (
@@ -65,6 +94,7 @@ export function BingoBoard({ board, photos, onToggle, onPhoto, onPhotoRemove }: 
               ].join(' ')}
               onClick={() => onToggle(i)}
               aria-pressed={board[i]}
+              title={memos[i] ?? undefined}
             >
               {photos[i] && <img className="square-photo" src={photos[i]} alt="" />}
               <span className="square-kind">{activity.kind === 'light' ? 'Light' : 'Deep'}</span>
@@ -72,7 +102,7 @@ export function BingoBoard({ board, photos, onToggle, onPhoto, onPhotoRemove }: 
                 {activity.icon}
               </span>
               <span className="square-name">{activity.name}</span>
-              <span className="square-subtitle">{activity.subtitle}</span>
+              <span className="square-subtitle">{activity.subtitle[lang]}</span>
               {board[i] && (
                 <span className="square-check" aria-hidden>
                   ✓
@@ -83,9 +113,18 @@ export function BingoBoard({ board, photos, onToggle, onPhoto, onPhotoRemove }: 
               <div className="photo-controls">
                 <button
                   type="button"
+                  className={`photo-btn ${memos[i] ? 'has-memo' : ''}`}
+                  title={memos[i] ? strings.memoEdit : strings.memoAdd}
+                  aria-label={`${memos[i] ? strings.memoEdit : strings.memoAdd} — ${activity.name}`}
+                  onClick={() => openMemo(i)}
+                >
+                  📝
+                </button>
+                <button
+                  type="button"
                   className="photo-btn"
-                  title={photos[i] ? 'Replace verification photo' : 'Add verification photo'}
-                  aria-label={`${photos[i] ? 'Replace' : 'Add'} verification photo for ${activity.name}`}
+                  title={photos[i] ? strings.photoReplace : strings.photoAdd}
+                  aria-label={`${photos[i] ? strings.photoReplace : strings.photoAdd} — ${activity.name}`}
                   onClick={() => pickPhoto(i)}
                 >
                   📷
@@ -94,8 +133,8 @@ export function BingoBoard({ board, photos, onToggle, onPhoto, onPhotoRemove }: 
                   <button
                     type="button"
                     className="photo-btn photo-remove"
-                    title="Remove photo"
-                    aria-label={`Remove photo for ${activity.name}`}
+                    title={strings.photoRemove}
+                    aria-label={`${strings.photoRemove} — ${activity.name}`}
                     onClick={() => onPhotoRemove(i)}
                   >
                     ✕
@@ -133,6 +172,51 @@ export function BingoBoard({ board, photos, onToggle, onPhoto, onPhotoRemove }: 
           e.target.value = ''
         }}
       />
+      {memoIndex !== null && (
+        <div className="memo-overlay" onClick={() => setMemoIndex(null)}>
+          <div
+            className="memo-modal card"
+            role="dialog"
+            aria-label={strings.memoTitle(ACTIVITIES[memoIndex].name)}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3>{strings.memoTitle(ACTIVITIES[memoIndex].name)}</h3>
+            <textarea
+              className="memo-text"
+              value={memoDraft}
+              placeholder={strings.memoPlaceholder}
+              autoFocus
+              rows={4}
+              maxLength={500}
+              onChange={(e) => setMemoDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') setMemoIndex(null)
+                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) saveMemo()
+              }}
+            />
+            <div className="memo-actions">
+              {memos[memoIndex] && (
+                <button
+                  type="button"
+                  className="memo-btn memo-delete"
+                  onClick={() => {
+                    onMemo(memoIndex, null)
+                    setMemoIndex(null)
+                  }}
+                >
+                  {strings.delete}
+                </button>
+              )}
+              <button type="button" className="memo-btn" onClick={() => setMemoIndex(null)}>
+                {strings.cancel}
+              </button>
+              <button type="button" className="memo-btn memo-save" onClick={saveMemo}>
+                {strings.save}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

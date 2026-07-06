@@ -1,27 +1,29 @@
+import type { Strings } from '../i18n'
 import type { RankedTeam } from '../types'
 
 interface Props {
   ranking: RankedTeam[]
   activeTeamId: string
+  strings: Strings
   onSelect: (id: string) => void
 }
 
-export function Leaderboard({ ranking, activeTeamId, onSelect }: Props) {
+export function Leaderboard({ ranking, activeTeamId, strings, onSelect }: Props) {
   const jointRanks = new Set(
     ranking.filter((r, _, all) => all.filter((o) => o.rank === r.rank).length > 1).map((r) => r.rank),
   )
 
   return (
     <section className="leaderboard card">
-      <h2>Leaderboard</h2>
-      <p className="leaderboard-hint">Most bingo lines wins · ties broken by squares completed</p>
+      <h2>{strings.leaderboard}</h2>
+      <p className="leaderboard-hint">{strings.leaderboardHint}</p>
       <table>
         <thead>
           <tr>
-            <th scope="col">Rank</th>
-            <th scope="col">Team</th>
-            <th scope="col">Lines</th>
-            <th scope="col">Squares</th>
+            <th scope="col">{strings.rank}</th>
+            <th scope="col">{strings.team}</th>
+            <th scope="col">{strings.lines}</th>
+            <th scope="col">{strings.squares}</th>
           </tr>
         </thead>
         <tbody>

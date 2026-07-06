@@ -1,8 +1,10 @@
+import type { Lang } from './i18n'
+
 export type ActivityKind = 'light' | 'deep'
 
 export interface Activity {
   name: string
-  subtitle: string
+  subtitle: Record<Lang, string>
   icon: string
   kind: ActivityKind
 }
@@ -16,11 +18,14 @@ export interface Team {
   completed: Board
   /** Verification photo per square as a data-URL thumbnail, or null. */
   photos: (string | null)[]
+  /** Short activity memo per square, or null. */
+  memos: (string | null)[]
 }
 
 export interface AppState {
   teams: Team[]
   activeTeamId: string
+  lang: Lang
 }
 
 export interface RankedTeam {
