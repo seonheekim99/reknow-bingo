@@ -1,11 +1,12 @@
--- Run once in the Supabase project's SQL Editor (Dashboard → SQL Editor → New query).
+-- Run in the Supabase project's SQL Editor (Dashboard → SQL Editor → New query).
+-- Idempotent: safe to re-run if a previous attempt partially completed.
 -- Creates the shared `teams` table that every device reads/writes and
 -- subscribes to for realtime updates. RLS is wide open (no auth) by design —
 -- this is a lightweight tool for one event, not a multi-tenant app.
 
 create extension if not exists pgcrypto;
 
-create table teams (
+create table if not exists teams (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   completed boolean[] not null default array_fill(false, array[9]),
@@ -16,9 +17,22 @@ create table teams (
 
 alter table teams enable row level security;
 
+drop policy if exists "public read" on teams;
+drop policy if exists "public insert" on teams;
+drop policy if exists "public update" on teams;
+drop policy if exists "public delete" on teams;
+
 create policy "public read"   on teams for select using (true);
 create policy "public insert" on teams for insert with check (true);
 create policy "public update" on teams for update using (true);
 create policy "public delete" on teams for delete using (true);
 
-alter publication supabase_realtime add table teams;
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and tablename = 'teams'
+  ) then
+    alter publication supabase_realtime add table teams;
+  end if;
+end $$;
