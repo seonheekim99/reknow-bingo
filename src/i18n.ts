@@ -25,6 +25,9 @@ export interface Strings {
   save: string
   cancel: string
   delete: string
+  syncConnecting: string
+  syncSynced: string
+  syncOffline: string
 }
 
 const en: Strings = {
@@ -52,6 +55,9 @@ const en: Strings = {
   save: 'Save',
   cancel: 'Cancel',
   delete: 'Delete',
+  syncConnecting: 'Connecting…',
+  syncSynced: 'Synced',
+  syncOffline: 'Offline — reconnecting',
 }
 
 const ko: Strings = {
@@ -79,6 +85,9 @@ const ko: Strings = {
   save: '저장',
   cancel: '취소',
   delete: '삭제',
+  syncConnecting: '연결 중…',
+  syncSynced: '동기화됨',
+  syncOffline: '오프라인 — 재연결 중',
 }
 
 export const STRINGS: Record<Lang, Strings> = { en, ko }

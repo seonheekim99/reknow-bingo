@@ -39,6 +39,61 @@ body {
   gap: 12px;
 }
 
+.loading-state {
+  color: var(--paper);
+  opacity: 0.7;
+  text-align: center;
+  padding: 80px 0;
+  font-size: 1rem;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sync-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--paper);
+  opacity: 0.85;
+}
+
+.sync-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #9aa6b5;
+}
+
+.sync-badge.connecting .sync-dot {
+  background: var(--yellow);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.sync-badge.synced .sync-dot {
+  background: #4ade80;
+}
+
+.sync-badge.offline .sync-dot {
+  background: #f0574f;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
 .lang-toggle {
   display: inline-flex;
   border: 1.5px solid rgba(244, 244, 242, 0.35);
